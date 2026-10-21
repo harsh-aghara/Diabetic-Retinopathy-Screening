@@ -1,0 +1,21 @@
+{
+  "architecture": "CustomDRCNN",
+  "input_size": [224, 224],
+  "gradcam_target_layer": "conv5",
+  "binary_model": {
+    "num_classes": 2,
+    "classes": ["Non-Referable", "Referable"],
+    "accuracy": 0.892,
+    "f1_score": 0.887,
+    "sensitivity": 0.895,
+    "specificity": 0.889
+  },
+  "multiclass_model": {
+    "num_classes": 5,
+    "classes": ["No DR", "Mild", "Moderate", "Severe", "Proliferative"],
+    "accuracy": 0.835,
+    "f1_score": 0.829,
+    "macro_sensitivity": 0.812,
+    "macro_specificity": 0.941
+  }
+}
