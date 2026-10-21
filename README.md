@@ -99,6 +99,7 @@ Diabetic-Retinopathy-Screening/
 │   │   └── main.jsx                  # React DOM mount point
 │   ├── package.json
 │   └── vite.config.js
+├── Makefile                    # Developer workflow automation (install, test, dev, build)
 └── README.md
 ```
 
@@ -106,11 +107,27 @@ Diabetic-Retinopathy-Screening/
 
 ## Quickstart & Installation
 
-### Prerequisites
-- Python 3.10+ (tested through Python 3.14)
-- Node.js 18+ and npm
+### Using Make (Recommended)
 
-### 1. Backend Setup
+```bash
+# 1. Install all dependencies (backend virtualenv + frontend npm)
+make install
+
+# 2. Run test suite & static type checks
+make test
+make lint
+
+# 3. Launch development servers (in separate terminal tabs)
+make dev-backend   # FastAPI server on http://localhost:8000
+make dev-frontend  # Vite React on http://localhost:5173
+
+# 4. Build frontend for production
+make build
+```
+
+### Manual Setup
+
+#### 1. Backend Setup
 ```bash
 cd backend
 python -m venv .venv
