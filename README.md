@@ -129,7 +129,7 @@ Diabetic-Retinopathy-Screening/
 ### Setup Steps for Contributors
 
 1. **Obtain the Checkpoints:**
-   - Download `checkpoint_binary.pt` and `checkpoint_multiclass.pt` from the project's [GitHub Releases](https://github.com/harsh-aghara/Diabetic-Retinopathy-Screening/releases) or your team's shared drive.
+   - Download `checkpoint_binary.pt` and `checkpoint_multiclass.pt` from the project's [GitHub Releases](https://github.com/harsh-aghara/Diabetic-Retinopathy-Screening/releases).
 2. **Place Files in `backend/artifacts/`:**
    ```bash
    # Ensure target directory exists
