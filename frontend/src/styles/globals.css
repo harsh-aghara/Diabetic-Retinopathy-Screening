@@ -1,0 +1,149 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --canvas-bg: #F8FAFC;
+    --card-bg: #FFFFFF;
+    --text-primary: #0F172A;
+    --border-color: #E2E8F0;
+  }
+
+  .dark {
+    --canvas-bg: #020617;
+    --card-bg: #0F172A;
+    --text-primary: #F8FAFC;
+    --border-color: #1E293B;
+  }
+
+  body {
+    background-color: var(--canvas-bg);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Fixed-width numbers on numerical readouts to prevent layout shift */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* Fitts's Law large tactile cards */
+  .tactile-card {
+    @apply min-h-[56px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-150;
+  }
+
+  .tactile-card-interactive {
+    @apply tactile-card cursor-pointer hover:border-teal-500/60 hover:bg-slate-50/80 dark:hover:bg-slate-800/60 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:outline-none;
+  }
+
+  /* Clinical Hairlines */
+  .hairline-b {
+    @apply border-b border-slate-200 dark:border-slate-800/80;
+  }
+
+  .hairline-t {
+    @apply border-t border-slate-200 dark:border-slate-800/80;
+  }
+
+  .hairline {
+    @apply border border-slate-200 dark:border-slate-800/80;
+  }
+}
+
+/* ==========================================================================
+   CLINICAL PRINT TO PDF STYLESHEET
+   Guarantees that retinal photographs, Grad-CAM overlays, diagnostic gauges,
+   and clinical cards are NEVER cut or fragmented across PDF page boundaries.
+   Overcomes Chromium/WebKit flex/grid print engine fragmentation limitations.
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  /* Reset layout boxes to flow layout so browser print engine respects page breaks */
+  html,
+  body,
+  #root,
+  #main-content,
+  main,
+  .min-h-screen,
+  .result-page-container {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    float: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+  }
+
+  /* Enforce exact color rendering for medical images, heatmaps, and badges */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Hide navigation, buttons, sliders, and interactive controls */
+  nav,
+  header,
+  button,
+  input[type="range"],
+  .print-hidden,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Flatten responsive grid columns so print cards flow linearly without flex/grid truncation */
+  .grid-cols-12,
+  .result-grid-layout {
+    display: block !important;
+  }
+
+  .lg\:col-span-5,
+  .lg\:col-span-7 {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+
+  /* Core fragmentation defense: prevent any card or panel from being cut across pages */
+  .print-avoid-break,
+  .tactile-card,
+  article,
+  section {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-before: auto !important;
+    break-after: auto !important;
+    display: block !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  /* Primary rule for images, SVGs, and photos: NEVER split across two pages */
+  img,
+  svg,
+  canvas,
+  picture,
+  figure,
+  .print-photo-block {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-before: auto !important;
+    break-after: auto !important;
+    max-height: 100% !important;
+  }
+}
