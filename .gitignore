@@ -171,7 +171,6 @@ htmlcov/
 # Backend artifacts
 backend/artifacts/*.pkl
 backend/artifacts/*.joblib
-!backend/artifacts/.gitkeep
 
 # Large model archives
 *.zip

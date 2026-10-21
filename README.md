@@ -115,7 +115,6 @@ The screening backend relies on trained PyTorch weights for the `CustomDRCNN` du
 Diabetic-Retinopathy-Screening/
 └── backend/
     └── artifacts/
-        ├── .gitkeep
         ├── metrics.json
         ├── checkpoint_binary.pt       # <-- Place binary model weights here (~196.4 MB)
         └── checkpoint_multiclass.pt   # <-- Place multiclass model weights here (~196.4 MB)
