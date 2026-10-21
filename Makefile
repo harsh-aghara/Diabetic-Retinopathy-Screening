@@ -17,9 +17,10 @@ RUFF ?= $(VENV)/bin/ruff
 CYAN := \033[36m
 GREEN := \033[32m
 YELLOW := \033[33m
+RED := \033[31m
 RESET := \033[0m
 
-.PHONY: help install install-backend install-frontend test test-backend lint format dev-backend dev-frontend dev build preview clean
+.PHONY: help install install-backend install-frontend verify-weights test test-backend lint format dev-backend dev-frontend dev build preview clean
 
 help: ## Show this help message and target descriptions
 	@echo -e "$(CYAN)Diabetic Retinopathy Screening System - Make Commands$(RESET)"
@@ -44,6 +45,20 @@ install-frontend: ## Install frontend npm dependencies
 	@echo -e "$(YELLOW)--> Installing frontend dependencies...$(RESET)"
 	@npm install --prefix frontend
 	@echo -e "$(GREEN)Frontend dependencies installed successfully.$(RESET)"
+
+verify-weights: ## Verify that model checkpoints are placed in backend/artifacts/
+	@echo -e "$(YELLOW)--> Checking for trained model checkpoints in backend/artifacts/...$(RESET)"
+	@if [ ! -f backend/artifacts/checkpoint_binary.pt ]; then \
+		echo -e "$(RED)✗ Missing: backend/artifacts/checkpoint_binary.pt$(RESET)"; \
+		echo -e "  Please place the binary model weights in backend/artifacts/. See README.md."; \
+		exit 1; \
+	fi
+	@if [ ! -f backend/artifacts/checkpoint_multiclass.pt ]; then \
+		echo -e "$(RED)✗ Missing: backend/artifacts/checkpoint_multiclass.pt$(RESET)"; \
+		echo -e "  Please place the multiclass model weights in backend/artifacts/. See README.md."; \
+		exit 1; \
+	fi
+	@echo -e "$(GREEN)✓ All model checkpoints found in backend/artifacts/.$(RESET)"
 
 # ------------------------------------------------------------------------------
 # Testing & Code Quality

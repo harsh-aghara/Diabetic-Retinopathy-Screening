@@ -105,6 +105,52 @@ Diabetic-Retinopathy-Screening/
 
 ---
 
+## Model Weights Setup (Required for Backend & Tests)
+
+The screening backend relies on trained PyTorch weights for the `CustomDRCNN` dual-network pipeline. Because individual checkpoint files are ~197 MB each (exceeding GitHub's 100 MB tracking limit), they are excluded from git tracking via `.gitignore` and must be placed into `backend/artifacts/`.
+
+### Expected Directory Layout
+
+```
+Diabetic-Retinopathy-Screening/
+└── backend/
+    └── artifacts/
+        ├── .gitkeep
+        ├── metrics.json
+        ├── checkpoint_binary.pt       # <-- Place binary model weights here (~196.4 MB)
+        └── checkpoint_multiclass.pt   # <-- Place multiclass model weights here (~196.4 MB)
+```
+
+| Checkpoint File | Size | Architecture | Purpose in Screening Pipeline |
+|---|---|---|---|
+| `checkpoint_binary.pt` | ~196.4 MB | `CustomDRCNN(num_classes=2)` | Binary referability triage score (Referable vs. Non-Referable) & Grad-CAM |
+| `checkpoint_multiclass.pt` | ~196.4 MB | `CustomDRCNN(num_classes=5)` | 5-stage ICDR disease severity distribution (Stages 0–4) & Grad-CAM |
+
+### Setup Steps for Contributors
+
+1. **Obtain the Checkpoints:**
+   - Download `checkpoint_binary.pt` and `checkpoint_multiclass.pt` from the project's [GitHub Releases](https://github.com/harsh-aghara/Diabetic-Retinopathy-Screening/releases) or your team's shared drive.
+2. **Place Files in `backend/artifacts/`:**
+   ```bash
+   # Ensure target directory exists
+   mkdir -p backend/artifacts
+
+   # Copy the downloaded files into backend/artifacts/
+   cp /path/to/downloads/checkpoint_binary.pt backend/artifacts/
+   cp /path/to/downloads/checkpoint_multiclass.pt backend/artifacts/
+   ```
+3. **Verify Installation:**
+   Run the built-in verification check:
+   ```bash
+   make verify-weights
+   ```
+   Or run the full test suite to verify model loading and inference:
+   ```bash
+   make test
+   ```
+
+---
+
 ## Quickstart & Installation
 
 ### Using Make (Recommended)
