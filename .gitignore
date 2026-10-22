@@ -182,6 +182,9 @@ notebooks/
 create_test.md
 aptos2019-blindness-detection/
 data/
+backend/data/
+*.db
+*.sqlite3
 
 
 

@@ -148,6 +148,114 @@ class ScreeningResponse(BaseModel):
         default=None,
         description="Screening predictions and heatmaps (null if rejected for recapture)",
     )
+    record_id: int | None = Field(
+        default=None,
+        description="Persisted database record ID if patient info was provided",
+    )
+    patient_id: str | None = Field(
+        default=None,
+        description="Patient Medical Record Number (MRN) if patient info was provided",
+    )
+
+
+class PatientRecordSummary(BaseModel):
+    """Summarized patient screening record for tabular listing."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: int = Field(description="Database primary key record ID")
+    patient_id: str = Field(description="Unique patient MRN or ID")
+    name: str = Field(description="Patient full name")
+    age: int = Field(description="Patient age in years")
+    gender: str = Field(description="Patient biological sex / gender")
+    eye_examined: str | None = Field(default=None, description="Target eye (OD/OS/OU)")
+    doctor_name: str | None = Field(default=None, description="Attending clinician name")
+    created_at: str = Field(description="Screening examination UTC ISO timestamp")
+    quality_decision: str = Field(description="Quality assessment triage decision")
+    referable_tier: str | None = Field(default=None, description="Risk tier: Low, Moderate, High")
+    referable_label: str | None = Field(default=None, description="Referable or Non-Referable")
+    referable_probability: float | None = Field(default=None, description="Probability score")
+    referable_confidence: float | None = Field(default=None, description="Binary model confidence")
+    grade_predicted: int | None = Field(default=None, description="ICDR severity grade (0-4)")
+    grade_label: str | None = Field(default=None, description="ICDR severity clinical label")
+    grade_confidence: float | None = Field(default=None, description="Multiclass model confidence")
+    preprocessed_image: str | None = Field(default=None, description="Thumbnail data URL")
+    heatmap_image: str | None = Field(default=None, description="Grad-CAM thumbnail data URL")
+
+
+class PatientRecordDetail(BaseModel):
+    """Comprehensive screening record including clinical intake and all IQA metrics."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: int = Field(description="Database primary key record ID")
+    patient_id: str = Field(description="Unique patient MRN or ID")
+    name: str = Field(description="Patient full name")
+    age: int = Field(description="Patient age in years")
+    gender: str = Field(description="Patient biological sex / gender")
+    contact: str | None = Field(default=None, description="Patient contact phone or email")
+    diabetes_type: str | None = Field(default=None, description="Diabetes classification type")
+    diabetes_duration: int | None = Field(default=None, description="Duration in years")
+    eye_examined: str | None = Field(default=None, description="Target eye (OD/OS/OU)")
+    doctor_name: str | None = Field(default=None, description="Attending clinician name")
+    clinical_notes: str | None = Field(default=None, description="Physician clinical notes")
+    created_at: str = Field(description="Screening examination UTC ISO timestamp")
+    quality_decision: str = Field(description="Quality assessment triage decision")
+    quality_reasons: list[str] = Field(default_factory=list, description="Quality issue reasons")
+    fov_ratio: float = Field(description="Field-of-view coverage ratio")
+    sharpness: float = Field(description="Laplacian variance sharpness")
+    illumination_var: float = Field(description="Illumination coefficient of variation")
+    vessel_contrast: float = Field(description="Sobel vessel contrast magnitude")
+    referable_probability: float | None = Field(default=None, description="Probability score")
+    referable_label: str | None = Field(default=None, description="Referable or Non-Referable")
+    referable_tier: str | None = Field(default=None, description="Risk tier: Low, Moderate, High")
+    referable_confidence: float | None = Field(default=None, description="Binary model confidence")
+    grade_predicted: int | None = Field(default=None, description="ICDR severity grade (0-4)")
+    grade_label: str | None = Field(default=None, description="ICDR severity clinical label")
+    grade_confidence: float | None = Field(default=None, description="Multiclass model confidence")
+    grade_probabilities: list[float] = Field(default_factory=list, description="5-class probabilities")
+    models_agree: bool | None = Field(default=None, description="Dual CNN concordance")
+    preprocessed_image: str | None = Field(default=None, description="Preprocessed image data URL")
+    heatmap_image: str | None = Field(default=None, description="Grad-CAM heatmap data URL")
+    original_filename: str | None = Field(default=None, description="Original uploaded filename")
+    notes: str | None = Field(default=None, description="Screening record notes")
+
+
+class RecordsStatsResponse(BaseModel):
+    """Aggregate statistics for patient screening records dashboard."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    total_screenings: int = Field(description="Total patient screenings recorded")
+    high_risk_count: int = Field(description="Number of High Risk / Referable screenings")
+    moderate_risk_count: int = Field(description="Number of Moderate Risk screenings")
+    low_risk_count: int = Field(description="Number of Low Risk / Normal screenings")
+    recapture_count: int = Field(description="Number of rejected / recapture screenings")
+
+
+class PatientInfoPayload(BaseModel):
+    """Patient demographics and clinical metadata for report generation."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str = Field(default="Anonymous Patient")
+    patient_id: str = Field(default="N/A")
+    age: int | str = Field(default="N/A")
+    gender: str = Field(default="N/A")
+    eye_examined: str | None = Field(default=None)
+    diabetes_type: str | None = Field(default=None)
+    diabetes_duration: int | None = Field(default=None)
+    doctor_name: str | None = Field(default=None)
+    clinical_notes: str | None = Field(default=None)
+
+
+class ReportPdfRequest(BaseModel):
+    """Ad-hoc PDF generation request payload from screening result."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    patient: PatientInfoPayload = Field(default_factory=PatientInfoPayload)
+    screening: ScreeningResponse = Field(description="Screening response data")
 
 
 class HealthResponse(BaseModel):
