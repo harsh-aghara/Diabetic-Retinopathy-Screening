@@ -35,6 +35,9 @@ Production-grade clinical decision support application for automated Diabetic Re
 ```
 
 ### 1. Key Capabilities
+- **Patient Intake & Clinical Database:** Captures patient demographic intake (name, age, biological sex, MRN, target eye OD/OS/OU, diabetes history, duration, attending doctor, clinical notes) before fundus acquisition. Persists records to an embedded SQLite database (`backend/data/screening.db`).
+- **Clinic Records Dashboard:** Allows eye clinic practitioners to search, filter by risk tier, review historical screenings with thumbnails, inspect Grad-CAM heatmaps, and manage records.
+- **Publication-Grade Clinical PDF Generation:** Pure-Python standards-compliant PDF 1.4 clinical decision support reports with patient demographics, IQA metrics audit, side-by-side fundus & Grad-CAM images, and physician sign-off line.
 - **Automated Image Quality Gate (IQA):** Evaluates Field-of-View ratio (`> 0.20`), focus sharpness via Laplacian variance (`> 25.0`), illumination uniformity across a 3×3 grid (`< 0.45`), and green-channel Sobel vessel contrast (`> 8.0`). Rejects blurry/occluded images before inference to protect clinical safety.
 - **Dual-Model Deep Learning:**
   - **Binary Model:** Screens for Referable DR (grades 2–4) vs Non-Referable (grades 0–1).
@@ -42,6 +45,8 @@ Production-grade clinical decision support application for automated Diabetic Re
   - **Concordance Verification:** Automatically checks whether both models agree on referability.
 - **Grad-CAM Visual Heatmaps:** Single-pass forward/backward gradients from the penultimate `conv5` layer produce 224×224 transparent RGBA heatmaps.
 - **Human-Centered Interface (HCI):**
+  - Sequential 2-step clinical wizard (`Patient Intake` ➔ `Fundus Photography` ➔ `Diagnostic Results`).
+  - Active patient persistent anchor banner (recognition over recall).
   - Interactive client-side opacity slider (0–100%) and view toggles (Overlay, Side-by-Side, Preprocessed, Raw).
   - Triple-encoded risk tiers (Color + Text Badge + Geometric Icon) adhering to WCAG 2.1 AA.
   - Plain-language clinical findings and actionable referral timelines.
@@ -55,7 +60,9 @@ Diabetic-Retinopathy-Screening/
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
-│   │   ├── main.py             # FastAPI endpoints (/health, /model/info, /predict)
+│   │   ├── main.py             # FastAPI endpoints (health, predict, records, PDF)
+│   │   ├── db.py               # SQLite storage and clinical records repository
+│   │   ├── pdf_report.py       # Pure-Python PDF 1.4 clinical report builder
 │   │   ├── model.py            # Verbatim CustomDRCNN 5-block CNN architecture
 │   │   ├── quality.py          # 4 IQA metrics & evaluate_gradability
 │   │   ├── preprocessing.py    # 7-step retinal fundus preprocessing pipeline
@@ -67,11 +74,14 @@ Diabetic-Retinopathy-Screening/
 │   │   ├── checkpoint_binary.pt      # Binary model weights (torch.save dict)
 │   │   ├── checkpoint_multiclass.pt  # Multiclass model weights (torch.save dict)
 │   │   └── metrics.json              # Model architecture metadata & metrics
+│   ├── data/
+│   │   └── screening.db              # SQLite clinical database (auto-created)
 │   ├── tests/
 │   │   ├── conftest.py               # In-memory synthetic fundus fixtures
 │   │   ├── test_quality.py           # Unit tests for IQA boundaries
 │   │   ├── test_preprocessing.py     # Unit tests for decoding & validation
 │   │   ├── test_inference.py         # Unit tests for prediction & concordance
+│   │   ├── test_records.py           # Unit tests for SQLite CRUD & PDF reports
 │   │   └── test_api.py               # Integration tests for all HTTP endpoints
 │   ├── mypy.ini                      # Strict static typing configuration
 │   ├── pytest.ini                    # Pytest configuration
@@ -81,20 +91,22 @@ Diabetic-Retinopathy-Screening/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── layout/               # Navbar & clinical disclaimer
+│   │   │   ├── patient/              # PatientIntakeForm demographic & clinical intake
 │   │   │   ├── upload/               # ImageDropzone, ImagePreview, CaptureGuidance
 │   │   │   ├── results/              # HeatmapViewer, QualityReport, GradeChart, RiskGauge, WhyPanel
 │   │   │   └── learn/                # LearnMore educational accordion
 │   │   ├── hooks/
 │   │   │   └── useScreening.js       # Upload lifecycle & AbortController hook
 │   │   ├── lib/
-│   │   │   ├── api.js                # Multipart fetch client with ApiError
+│   │   │   ├── api.js                # Multipart fetch client, records & PDF wrappers
 │   │   │   ├── theme.js              # Triple-encoded tokens & quality colors
 │   │   │   ├── utils.js              # cn() & formatBytes()
 │   │   │   └── validateImage.js      # Client-side validation (<10MB, min 256px)
 │   │   ├── pages/
 │   │   │   ├── Landing.jsx           # Retinal screening overview & vector SVG
-│   │   │   ├── UploadPage.jsx        # Single-step fundus upload target
-│   │   │   └── ResultPage.jsx        # 12-column clinical results workspace
+│   │   │   ├── UploadPage.jsx        # Step 2: Fundus acquisition with patient anchor
+│   │   │   ├── ResultPage.jsx        # Step 3: Patient report & PDF download
+│   │   │   └── RecordsPage.jsx       # Doctor clinical records & search dashboard
 │   │   ├── App.jsx                   # Navigation state orchestrator
 │   │   └── main.jsx                  # React DOM mount point
 │   ├── package.json
