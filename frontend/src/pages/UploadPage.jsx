@@ -1,18 +1,38 @@
 import React, { useRef } from "react";
-import { ArrowLeft, Sparkles, Loader2, AlertCircle, ShieldAlert } from "lucide-react";
+import {
+  ArrowLeft,
+  Sparkles,
+  Loader2,
+  AlertCircle,
+  ShieldAlert,
+  User,
+  Eye,
+  Edit3,
+  CheckCircle2,
+} from "lucide-react";
 import { ImageDropzone } from "../components/upload/ImageDropzone";
 import { ImagePreview } from "../components/upload/ImagePreview";
 import { CaptureGuidance } from "../components/upload/CaptureGuidance";
 
 /**
  * Single-step image upload and analysis launch page.
+ * Displays active patient context and 2-step clinical progress indicator.
+ *
  * @param {{
  *   screening: ReturnType<import("../hooks/useScreening").useScreening>,
+ *   patientData?: any,
  *   onBack: () => void,
+ *   onEditPatient?: () => void,
  *   onAnalysisComplete: (result: any) => void
  * }} props
  */
-export function UploadPage({ screening, onBack, onAnalysisComplete }) {
+export function UploadPage({
+  screening,
+  patientData = null,
+  onBack,
+  onEditPatient,
+  onAnalysisComplete,
+}) {
   const {
     file,
     previewUrl,
@@ -29,7 +49,7 @@ export function UploadPage({ screening, onBack, onAnalysisComplete }) {
   const dropzoneRef = useRef(null);
 
   const handleStartAnalysis = async () => {
-    const data = await analyze();
+    const data = await analyze(patientData);
     if (data) {
       onAnalysisComplete(data);
     }
@@ -37,8 +57,8 @@ export function UploadPage({ screening, onBack, onAnalysisComplete }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-300">
-      {/* Top Navigation & Header */}
-      <div className="flex items-center justify-between">
+      {/* Top Navigation & Workflow Progress */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <button
           type="button"
           onClick={onBack}
@@ -46,14 +66,72 @@ export function UploadPage({ screening, onBack, onAnalysisComplete }) {
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-50"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Overview
+          {patientData ? "Back to Patient Intake" : "Back to Overview"}
         </button>
 
-        <span className="text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-mono">
-          Screening Step 1 of 1
-        </span>
+        {/* HCI Stepper Indicator */}
+        <div className="flex items-center gap-2 text-xs font-semibold">
+          <button
+            type="button"
+            onClick={onEditPatient}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-200 transition-colors"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            Step 1: Patient Intake
+          </button>
+          <span className="text-slate-300 dark:text-slate-700">➔</span>
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-700 text-white shadow-xs">
+            <span className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">2</span>
+            Step 2: Fundus Photo
+          </span>
+          <span className="text-slate-300 dark:text-slate-700">➔</span>
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+            <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px]">3</span>
+            Results
+          </span>
+        </div>
       </div>
 
+      {/* Active Patient Summary Banner (HCI: Recognition over Recall) */}
+      {patientData && (
+        <div className="p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-700 dark:bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <User className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold text-sm text-slate-900 dark:text-white">
+                  {patientData.name || "Anonymous Patient"}
+                </span>
+                <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-emerald-200 dark:border-emerald-800">
+                  {patientData.patient_id}
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-md font-semibold bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200">
+                  {patientData.eye_examined || "OD (Right)"}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                {patientData.age} yrs • {patientData.gender} • Diabetes: {patientData.diabetes_type || "None"}
+                {patientData.doctor_name ? ` • Attending: ${patientData.doctor_name}` : ""}
+              </p>
+            </div>
+          </div>
+
+          {onEditPatient && (
+            <button
+              type="button"
+              onClick={onEditPatient}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl text-emerald-800 dark:text-emerald-300 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100/50 dark:hover:bg-slate-800 transition-colors shadow-xs shrink-0"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              Edit Patient Info
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Page Title & Instructions */}
       <div className="space-y-2 text-center md:text-left">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
           Upload Retinal Fundus Photograph
@@ -78,7 +156,6 @@ export function UploadPage({ screening, onBack, onAnalysisComplete }) {
             dimensions={dimensions}
             onReplace={() => {
               clearFile();
-              // Focus dropzone after reset
               setTimeout(() => dropzoneRef.current?.click(), 50);
             }}
             onRemove={clearFile}
@@ -89,7 +166,7 @@ export function UploadPage({ screening, onBack, onAnalysisComplete }) {
         {/* Clinical Capture Guidance */}
         <CaptureGuidance />
 
-        {/* Global Error Banner (e.g. Server or API failures) */}
+        {/* Global Error Banner */}
         {error && status === "error" && file && (
           <div
             role="alert"
@@ -108,7 +185,7 @@ export function UploadPage({ screening, onBack, onAnalysisComplete }) {
         {/* Action Controls Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
           <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
-            Photos are evaluated in-memory and are never stored on disk or logged.
+            Photos are evaluated in-memory and screening results are stored in SQLite for clinical records.
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
