@@ -56,24 +56,17 @@ export function QualityReport({ quality }) {
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4 print-avoid-break print:p-4 print:border-slate-300 print:shadow-none">
-      {/* Triage Decision Banner */}
-      <div className={cn("p-4 rounded-xl border flex items-start gap-3.5", tokens.surfaceClass)}>
-        <div className={cn("p-2 rounded-lg shrink-0", tokens.badgeClass)}>
-          <Icon className="w-5 h-5" />
+      {/* Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-2">
+          <Icon className="w-4 h-4 text-slate-500" />
+          <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+            Image Quality Assessment (IQA)
+          </h4>
         </div>
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-              Image Quality Assessment:
-            </h4>
-            <span className={cn("text-xs font-semibold px-2.5 py-0.5 rounded-full border", tokens.badgeClass)}>
-              {tokens.badgeLabel}
-            </span>
-          </div>
-          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-            {tokens.clinicalSummary}
-          </p>
-        </div>
+        <span className={cn("text-xs font-semibold px-2.5 py-0.5 rounded-full border", tokens.badgeClass)}>
+          {tokens.badgeLabel}
+        </span>
       </div>
 
       {/* Numerical Metrics in Tabular Format */}

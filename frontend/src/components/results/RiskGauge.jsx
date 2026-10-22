@@ -35,10 +35,10 @@ export function RiskGauge({ referable, modelsAgree = true }) {
       {/* Header */}
       <div className="w-full flex items-center justify-between">
         <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-          Referable DR Screening Risk
+          Specialist Referral Risk
         </h3>
         <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium">
-          Binary CNN
+          Screening Triage
         </span>
       </div>
 
@@ -83,7 +83,7 @@ export function RiskGauge({ referable, modelsAgree = true }) {
             {percentage}%
           </span>
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Probability
+            Referral Risk
           </span>
         </div>
       </div>
@@ -118,10 +118,10 @@ export function RiskGauge({ referable, modelsAgree = true }) {
         >
           <div className="flex items-center gap-1.5 font-medium">
             <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span>Dual-Model Agreement:</span>
+            <span>Model Cross-Validation:</span>
           </div>
           <span className="font-bold">
-            {modelsAgree ? "Concordant ✓" : "Divergent ⚠"}
+            {modelsAgree ? "Concordant ✓" : "Review Advised ⚠"}
           </span>
         </div>
       </div>
