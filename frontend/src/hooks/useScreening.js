@@ -83,8 +83,9 @@ export function useScreening() {
 
   /**
    * Submit selected image to backend inference pipeline.
+   * @param {object|null} [patientData] - Optional patient demographic intake
    */
-  const analyze = useCallback(async () => {
+  const analyze = useCallback(async (patientData = null) => {
     if (!file) return;
 
     if (abortControllerRef.current) {
@@ -98,7 +99,7 @@ export function useScreening() {
     setError(null);
 
     try {
-      const data = await predictFundusImage(file, { signal: controller.signal });
+      const data = await predictFundusImage(file, patientData, { signal: controller.signal });
       setScreeningData(data);
       setStatus("success");
       return data;

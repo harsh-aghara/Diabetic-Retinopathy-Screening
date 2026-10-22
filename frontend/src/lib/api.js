@@ -17,27 +17,29 @@ export class ApiError extends Error {
 }
 
 /**
- * Submit retinal fundus photograph for automated screening and Grad-CAM explainability.
+ * Submit retinal fundus photograph with optional patient intake metadata.
  * @param {File | Blob} file - The image file to analyze
+ * @param {object|null} [patientData] - Optional patient demographics & history
  * @param {object} [options]
  * @param {AbortSignal} [options.signal] - Optional abort signal
- * @returns {Promise<{
- *   quality: {
- *     decision: "accept" | "enhance-then-accept" | "reject-recapture",
- *     metrics: { fov_ratio: number, sharpness: number, illumination_var: number, vessel_contrast: number },
- *     reasons: string[]
- *   },
- *   result: {
- *     referable: { probability: number, label: string, tier: "Low" | "Moderate" | "High", confidence: number },
- *     grade: { predicted: number, label: string, confidence: number, probabilities: number[] },
- *     models_agree: boolean,
- *     images: { preprocessed_png: string, heatmap_referable_png: string, heatmap_grade_png: string }
- *   } | null
- * }>}
+ * @returns {Promise<any>}
  */
-export async function predictFundusImage(file, { signal } = {}) {
+export async function predictFundusImage(file, patientData = null, { signal } = {}) {
   const formData = new FormData();
   formData.append("file", file);
+
+  if (patientData) {
+    if (patientData.name) formData.append("patient_name", patientData.name);
+    if (patientData.age) formData.append("patient_age", String(patientData.age));
+    if (patientData.gender) formData.append("patient_gender", patientData.gender);
+    if (patientData.patient_id) formData.append("patient_id", patientData.patient_id);
+    if (patientData.contact) formData.append("contact", patientData.contact);
+    if (patientData.diabetes_type) formData.append("diabetes_type", patientData.diabetes_type);
+    if (patientData.diabetes_duration) formData.append("diabetes_duration", String(patientData.diabetes_duration));
+    if (patientData.eye_examined) formData.append("eye_examined", patientData.eye_examined);
+    if (patientData.doctor_name) formData.append("doctor_name", patientData.doctor_name);
+    if (patientData.clinical_notes) formData.append("clinical_notes", patientData.clinical_notes);
+  }
 
   let response;
   try {
@@ -81,6 +83,118 @@ export async function predictFundusImage(file, { signal } = {}) {
   }
 
   return response.json();
+}
+
+/**
+ * Fetch patient screening records with search query and tier filter.
+ * @param {{ search?: string, tier?: string, limit?: number, offset?: number }} [params]
+ */
+export async function fetchRecords({ search, tier, limit = 100, offset = 0 } = {}) {
+  const query = new URLSearchParams();
+  if (search) query.set("search", search);
+  if (tier && tier !== "all") query.set("tier", tier);
+  query.set("limit", String(limit));
+  query.set("offset", String(offset));
+
+  const response = await fetch(`${API_BASE}/records?${query.toString()}`);
+  if (!response.ok) {
+    throw new ApiError("fetch_records_failed", "Failed to retrieve patient records.", response.status);
+  }
+  return response.json();
+}
+
+/**
+ * Retrieve summary screening statistics for records dashboard.
+ */
+export async function fetchRecordsStats() {
+  const response = await fetch(`${API_BASE}/records/stats`);
+  if (!response.ok) {
+    throw new ApiError("fetch_stats_failed", "Failed to retrieve statistics.", response.status);
+  }
+  return response.json();
+}
+
+/**
+ * Retrieve single screening record detail by ID.
+ * @param {number|string} recordId
+ */
+export async function fetchRecordDetail(recordId) {
+  const response = await fetch(`${API_BASE}/records/${recordId}`);
+  if (!response.ok) {
+    throw new ApiError("record_not_found", `Record ${recordId} not found.`, response.status);
+  }
+  return response.json();
+}
+
+/**
+ * Delete a screening record by ID.
+ * @param {number|string} recordId
+ */
+export async function deleteRecord(recordId) {
+  const response = await fetch(`${API_BASE}/records/${recordId}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new ApiError("delete_failed", "Failed to delete record.", response.status);
+  }
+  return response.json();
+}
+
+/**
+ * Download official clinical PDF report by record ID.
+ * @param {number|string} recordId
+ * @param {string} [fallbackFilename]
+ */
+export async function downloadRecordPdf(recordId, fallbackFilename = `DR_Report_Rec${recordId}.pdf`) {
+  const response = await fetch(`${API_BASE}/records/${recordId}/pdf`);
+  if (!response.ok) {
+    throw new ApiError("pdf_failed", "Failed to download clinical PDF report.", response.status);
+  }
+  const blob = await response.blob();
+  const disposition = response.headers.get("Content-Disposition");
+  let filename = fallbackFilename;
+  if (disposition && disposition.includes("filename=")) {
+    filename = disposition.split("filename=")[1].replace(/["']/g, "").trim();
+  }
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+}
+
+/**
+ * Generate and download PDF from current screening session data.
+ * @param {object} patient
+ * @param {object} screening
+ * @param {string} [fallbackFilename]
+ */
+export async function downloadAdHocPdf(patient, screening, fallbackFilename = "DR_Screening_Report.pdf") {
+  const response = await fetch(`${API_BASE}/reports/pdf`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ patient, screening }),
+  });
+  if (!response.ok) {
+    throw new ApiError("pdf_failed", "Failed to generate report PDF.", response.status);
+  }
+  const blob = await response.blob();
+  const disposition = response.headers.get("Content-Disposition");
+  let filename = fallbackFilename;
+  if (disposition && disposition.includes("filename=")) {
+    filename = disposition.split("filename=")[1].replace(/["']/g, "").trim();
+  }
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
 }
 
 /**

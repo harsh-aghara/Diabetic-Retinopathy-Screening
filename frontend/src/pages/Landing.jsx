@@ -45,7 +45,7 @@ export default function Landing({ onStartScreening }) {
           </div>
 
           {/* Key Clinical & Architectural Pillars */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1">
             <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 flex flex-col gap-2">
               <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                 <Camera className="w-4 h-4" />
@@ -83,7 +83,21 @@ export default function Landing({ onStartScreening }) {
                   Grad-CAM Overlays
                 </h2>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                  Penultimate layer (conv5) visual heatmaps with interactive client-side opacity.
+                  Penultimate layer (conv5) visual heatmaps with interactive opacity slider.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 flex flex-col gap-2">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                  Clinic Records & PDF
+                </h2>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                  SQLite patient history tracking, search & filter, and publication PDF reports.
                 </p>
               </div>
             </div>
@@ -96,7 +110,7 @@ export default function Landing({ onStartScreening }) {
               onClick={onStartScreening}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 text-base font-semibold rounded-xl text-white bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 shadow-lg shadow-emerald-700/20 transition-all focus-visible:ring-4 focus-visible:ring-emerald-500/30 focus-visible:outline-none"
             >
-              <span>Upload Retinal Photograph</span>
+              <span>Start Patient Screening</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
